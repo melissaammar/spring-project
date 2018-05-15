@@ -86,13 +86,60 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/user/role", method = RequestMethod.PUT)
-    public User addUserRole(@RequestBody User user) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        return new User();
+    public User addUserRole(@RequestParam String username, String roleName) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
+        User user = null;
+        user = dataBaseService.findUserByUsername(username);
+        if (user.getUsername() == null)
+            return user;
+        else {
+            List<Role> oldRoles = user.getRoles();
+            String [] roles = null;
+            System.out.println("roles==> " + roles);
+            if (roleName != null && roleName.contains(",")) {
+                roles = roleName.split(",");
+            }
+            else {
+                roles = new String[] {roleName};
+            }
+            System.out.println("roles==> " + roles.toString());
+            for (int i = 0; i <roles.length; i++) {
+                Role newRole = dataBaseService.findRoleByName(roles[i]);
+                if (!oldRoles.contains(newRole))
+                    oldRoles.add(newRole);
+            }
+            user.setRoles(oldRoles);
+            Timestamp time = getDateTime();
+            user.setUpdated_at(time);
+            return dataBaseService.updateUser(user);
+        }
     }
 
     @RequestMapping(value = "/user/role", method = RequestMethod.DELETE)
-    public String deleteUserRole(@RequestBody User user) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        //dataBaseService.createUser(user);
-        return "done";
+    public User deleteUserRole(@RequestParam String username, String roleName) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
+        User user = null;
+        user = dataBaseService.findUserByUsername(username);
+        if (user.getUsername() == null)
+            return user;
+        else {
+            List<Role> oldRoles = user.getRoles();
+            String [] roles = null;
+            System.out.println("roles==> " + roles);
+            if (roleName != null && roleName.contains(",")) {
+                roles = roleName.split(",");
+            }
+            else {
+                roles = new String[] {roleName};
+            }
+            System.out.println("roles==> " + roles.toString());
+            for (int i = 0; i <roles.length; i++) {
+                Role newRole = dataBaseService.findRoleByName(roles[i]);
+                if (oldRoles.contains(newRole))
+                    oldRoles.remove(newRole);
+            }
+            user.setRoles(oldRoles);
+            Timestamp time = getDateTime();
+            user.setUpdated_at(time);
+            return dataBaseService.updateUser(user);
+        }
     }
 }
