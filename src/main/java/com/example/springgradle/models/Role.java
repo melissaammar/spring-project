@@ -1,19 +1,22 @@
 package com.example.springgradle.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.example.springgradle.dto.request.role.RoleCreateRequest;
+import com.example.springgradle.dto.request.role.RoleEditRequest;
 import javax.persistence.*;
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
+/*   Added by Melissa
+ *   This class is used to define the Role Model/Entity
+ */
+
 @Entity
 @Table(name = "roles")
-public class Role implements Serializable {
+public class Role extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
-    int id;
+    private int id;
     @Column(name = "name")
     private String name;
     @Column(name = "display_name")
@@ -25,10 +28,6 @@ public class Role implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "permission_id",
                     referencedColumnName = "permission_id"))
     private List<Permission> permissions;
-    @Column(name = "created_at")
-    private Timestamp created_at;
-    @Column(name = "updated_at")
-    private Timestamp updated_at;
 
     public Role() {
         super();
@@ -40,6 +39,17 @@ public class Role implements Serializable {
         this.permissions = permissions;
         this.created_at = created_at;
         this.updated_at = updated_at;
+    }
+
+    public Role(RoleCreateRequest roleCreateRequest) {
+        this.name = roleCreateRequest.getName();
+        this.display_name = roleCreateRequest.getDisplay_name();
+    }
+
+    public Role(RoleEditRequest roleEditRequest) {
+        this.id = roleEditRequest.getId();
+        this.name = roleEditRequest.getName();
+        this.display_name = roleEditRequest.getDisplay_name();
     }
 
     public int getId() { return id; }

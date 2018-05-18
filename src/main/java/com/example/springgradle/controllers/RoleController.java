@@ -1,135 +1,86 @@
 package com.example.springgradle.controllers;
 
-import com.example.springgradle.models.Permission;
+import com.example.springgradle.dto.request.role.RoleCreateRequest;
+import com.example.springgradle.dto.request.role.RoleEditRequest;
+import com.example.springgradle.dto.response.role.GetRoleResponse;
+import com.example.springgradle.dto.response.role.RoleCreateResponse;
+import com.example.springgradle.dto.response.role.RoleEditResponse;
+import com.example.springgradle.dto.response.role.RoleResponse;
 import com.example.springgradle.models.Role;
+import com.example.springgradle.services.RoleService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
 @RestController
 @Component
-public class RoleController extends BaseController {
+public class RoleController {
 
-    @RequestMapping(value = "/roles", method = RequestMethod.GET)
-    public List<Role> getRoles() throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        return dataBaseService.findAllRoles();
-    }
+    @Autowired
+    private RoleService roleService;
 
     @RequestMapping(value = "/role", method = RequestMethod.GET)
-    public Role getRole(@RequestParam String name) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        return dataBaseService.findRoleByName(name);
+    public GetRoleResponse getRole(@RequestParam int id) {
+        //This API returns a specific role by its ID
+        Role role = roleService.getRoleById(id);
+        if (role == null)
+            return new GetRoleResponse("-1","Unable to find role.");//role not found, returning error
+        return new GetRoleResponse("1","Successful Operation.",role);//Role found
     }
     @RequestMapping(value = "/role", method = RequestMethod.POST)
-    public Role createRole(@RequestBody Role role,  @RequestParam String permissionName) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        String [] permissions = null;
-        System.out.println("permissionName==> " + permissionName);
-        if (permissionName != null && permissionName.contains(",")) {
-            permissions = permissionName.split(",");
-        }
-        else {
-            permissions = new String[] {permissionName};
-        }
-        System.out.println("permissions==> " + permissions.toString());
-        List<Permission> rolePermission = new ArrayList<>();
-        for (int i = 0; i <permissions.length; i++) {
-            rolePermission.add(dataBaseService.findPermissionByName(permissions[i]));
-        }
-        System.out.println("rolePermission==> " + rolePermission);
-        role.setPermissions(rolePermission);
-        Timestamp time = getDateTime();
-        System.out.println("time==> " + time);
-        role.setCreated_at(time);
-        role.setUpdated_at(time);
-        return dataBaseService.updateRole(role);
+    public RoleCreateResponse createRole(@RequestBody RoleCreateRequest roleCreateRequest, @RequestParam String permissionId) {
+        /* This is API creates a new role and assigns the permissions mentioned in "permissionId"
+         * which can be one or several permissions comma separated
+        */
+        if (roleCreateRequest == null || permissionId == null)
+            return new RoleCreateResponse("-1","Please check the structure of your request.");
+        RoleResponse role = roleService.createRole(roleCreateRequest,permissionId);//creating the role's permissions and saving it in DB
+        if (role == null)
+            return new RoleCreateResponse("-1","Could not create the role.");//an error occurred while creating the role
+        return new RoleCreateResponse("1","Role successfully created.",role);//role successfully created
     }
 
     @RequestMapping(value = "/role", method = RequestMethod.PUT)
-    public Role editRole(@RequestBody Role role, @RequestParam String name) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        Role oldRole = dataBaseService.findRoleByName(name);
-        if (oldRole.getName() == null)
-            return oldRole;
-        else {
-            Timestamp time = getDateTime();
-            System.out.println("time==> " + time);
-            role.setUpdated_at(time);
-            if (role.getName() == null || role.getName() == "")
-                role.setName(oldRole.getName());
-            if (role.getDisplay_name() == null || role.getDisplay_name() == "")
-                role.setDisplay_name(oldRole.getDisplay_name());
-            role.setId(oldRole.getId());
-            role.setCreated_at(oldRole.getCreated_at());
-            role.setPermissions(oldRole.getPermissions());
-            return dataBaseService.updateRole(role);
-        }
+    public RoleEditResponse editRole(@RequestBody RoleEditRequest roleEditRequest) {
+        //API for editing a specific role
+        if (roleEditRequest == null)
+            return new RoleEditResponse("-1","Please check the structure of your request.");//Missing payload
+        RoleResponse role = roleService.editRole(roleEditRequest);//getting the role from DB and editing it
+        if (role == null)
+            return new RoleEditResponse("-1","Could not edit role.");
+        return new RoleEditResponse("1","Role successfully edited.",role);
     }
 
     @RequestMapping(value = "/role", method = RequestMethod.DELETE)
-    public String deleteRole(@RequestParam String roleName) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        dataBaseService.deleteRole(roleName);
-        return "done";
+    public RoleEditResponse deleteRole(@RequestParam int id) {
+        //API for deleting roles
+        String response = roleService.deleteRole(id);//calling the delete method in the role service
+        if (response == null)
+            return new RoleEditResponse("-1","Could not delete role.");
+        if (response.equalsIgnoreCase("success"))
+            return new RoleEditResponse("1","Role successfully deleted.");
+        return new RoleEditResponse("-1","" + response);
     }
 
     @RequestMapping(value = "/role/permission", method = RequestMethod.PUT)
-    public Role addRolePermission(@RequestParam String roleName, String permission) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        Role role = null;
-        role = dataBaseService.findRoleByName(roleName);
-        if (role.getName() == null)
-            return role;
-        else {
-            List<Permission> oldPermissions = role.getPermissions();
-            String [] permissions = null;
-            System.out.println("permission==> " + permission);
-            if (permission != null && permission.contains(",")) {
-                permissions = permission.split(",");
-            }
-            else {
-                permissions = new String[] {permission};
-            }
-            System.out.println("permissions==> " + permissions.toString());
-            for (int i = 0; i <permissions.length; i++) {
-                Permission newPermission = dataBaseService.findPermissionByName(permissions[i]);
-                if (!oldPermissions.contains(newPermission))
-                    oldPermissions.add(newPermission);
-            }
-            role.setPermissions(oldPermissions);
-            Timestamp time = getDateTime();
-            role.setUpdated_at(time);
-            return dataBaseService.updateRole(role);
-        }
+    public RoleEditResponse addRolePermission(@RequestParam int roleId, String permissionIds) {
+        //adding new permissions to the roles
+        if (roleId <= 0 || permissionIds == null)
+            return new RoleEditResponse("-1","Please check the structure of your request.");
+        RoleResponse role = roleService.editRolePermission(roleId, permissionIds, "addPermission");//editing role permissions and adding new permissions to the roles
+        if (role == null)
+            return new RoleEditResponse("-1","Could not update permissions.");
+        return new RoleEditResponse("1","Permissions successfully updated.",role);
     }
 
     @RequestMapping(value = "/role/permission", method = RequestMethod.DELETE)
-    public Role deleteRolePermission(@RequestParam String roleName, String permission) throws SQLException, ClassNotFoundException, ParseException, UnsupportedEncodingException {
-        Role role = null;
-        role = dataBaseService.findRoleByName(roleName);
-        if (role.getName() == null)
-            return role;
-        else {
-            List<Permission> oldPermissions = role.getPermissions();
-            String [] permissions = null;
-            System.out.println("permission==> " + permission);
-            if (permission != null && permission.contains(",")) {
-                permissions = permission.split(",");
-            }
-            else {
-                permissions = new String[] {permission};
-            }
-            System.out.println("permissions==> " + permissions.toString());
-            for (int i = 0; i <permissions.length; i++) {
-                Permission newPermission = dataBaseService.findPermissionByName(permissions[i]);
-                if (oldPermissions.contains(newPermission))
-                    oldPermissions.remove(newPermission);
-            }
-            role.setPermissions(oldPermissions);
-            Timestamp time = getDateTime();
-            role.setUpdated_at(time);
-            return dataBaseService.updateRole(role);
-        }
+    public RoleEditResponse deleteRolePermission(@RequestParam int roleId, String permissionIds) {
+        //deleting existing permissions from the role
+        if (roleId <= 0 || permissionIds == null)
+            return new RoleEditResponse("-1", "Please check the structure of your request.");
+        RoleResponse role = roleService.editRolePermission(roleId, permissionIds, "deletePermission");//editing role permissions and deleting mentioned permissions from the role
+        if (role == null)
+            return new RoleEditResponse("-1", "Could not delete permissions.");
+        return new RoleEditResponse("1", "Permissions successfully deleted.", role);
     }
 }

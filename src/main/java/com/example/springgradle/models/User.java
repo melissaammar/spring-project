@@ -1,24 +1,29 @@
 package com.example.springgradle.models;
 
+import com.example.springgradle.dto.request.user.UserCreateRequest;
+import com.example.springgradle.dto.request.user.UserEditRequest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
+/*   Added by Melissa
+ *   This class is used to define the User Model/Entity
+ */
+
 @Entity
 @Table(name = "users")
-public class User implements Serializable {
+public class User extends BaseModel {
 
-    public static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder(4);
+    private static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder(4);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    int id;
+    private int id;
     @Column(name = "name", unique = true)
     private String name;
     @Column(name = "email")
@@ -26,24 +31,22 @@ public class User implements Serializable {
     @Column(name = "username")
     private String username;
     @Column(name = "password")
+    @JsonIgnore
     private String password;
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH, CascadeType.REMOVE})
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name="user_role",
             joinColumns = @JoinColumn(name = "user_id",
                     referencedColumnName = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id",
                     referencedColumnName = "role_id"))
     private List<Role> roles;
-    @Column(name = "created_at")
-    private Timestamp created_at;
-    @Column(name = "updated_at")
-    private Timestamp updated_at;
 
     public User() {
         super();
     }
 
-    public User(String name, String email, String username, String password, List<Role> roles, Timestamp created_at, Timestamp updated_at) {
+    public User (String name, String email, String username, String password, List<Role> roles, Timestamp created_at, Timestamp updated_at) {
         this.name = name;
         this.email = email;
         this.username = username;
@@ -51,6 +54,22 @@ public class User implements Serializable {
         this.roles = roles;
         this.created_at = created_at;
         this.updated_at = updated_at;
+    }
+
+    public User (UserCreateRequest user) {
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.username = user.getUsername();
+        setPassword(user.getPassword());
+    }
+
+    public User (UserEditRequest user)
+    {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.username = user.getUsername();
+        setPassword(user.getPassword());
     }
 
     public int getId() { return id; }
@@ -92,20 +111,4 @@ public class User implements Serializable {
     public List<Role> getRoles() { return roles; }
 
     public void setRoles(List<Role> roles) { this.roles = roles; }
-
-    public void setCreated_at(Timestamp created_at) {
-        this.created_at = created_at;
-    }
-
-    public Timestamp getCreated_at() {
-        return created_at;
-    }
-
-    public void setUpdated_at(Timestamp updated_at) {
-        this.updated_at = updated_at;
-    }
-
-    public Timestamp getUpdated_at() {
-        return updated_at;
-    }
 }
