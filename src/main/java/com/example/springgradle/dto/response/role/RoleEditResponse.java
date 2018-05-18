@@ -10,6 +10,8 @@ public class RoleEditResponse {
     private String message;
     private RoleResponse role;
 
+    public RoleEditResponse () { super(); }
+
     public RoleEditResponse(String status, String message, RoleResponse role) {
         this.status = status;
         this.message = message;

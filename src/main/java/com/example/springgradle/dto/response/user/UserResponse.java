@@ -11,6 +11,8 @@ public class UserResponse {
     private int id;
     private String username;
 
+    public UserResponse() { super(); }
+
     public UserResponse(int id, String username) {
         this.id = id;
         this.username = username;

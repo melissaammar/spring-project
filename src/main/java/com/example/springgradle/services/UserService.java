@@ -27,8 +27,7 @@ public class UserService {
 
      public User getUserById (int id) {
         //Getting the user from the DB
-        User user = userRepository.findUserById(id);
-         return user;
+         return userRepository.findUserById(id);
      }
 
      public UserResponse createUser (UserCreateRequest userCreateRequest, String roles) {

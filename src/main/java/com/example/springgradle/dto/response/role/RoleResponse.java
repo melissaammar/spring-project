@@ -11,6 +11,8 @@ public class RoleResponse {
     private int id;
     private String display_name;
 
+    public RoleResponse() { super(); }
+
     public RoleResponse(int id, String display_name) {
         this.id = id;
         this.display_name = display_name;

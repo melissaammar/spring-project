@@ -27,10 +27,15 @@ public class UserController {
     @RequestMapping(value = "/user", method = RequestMethod.GET)
     public GetUserResponse getUser(@RequestParam int id) {
         //This API returns a specific user by its ID
-        User user = userService.getUserById(id);
-        if (user == null)
-            return new GetUserResponse("-1","Unable to find user.");//User not found, returning error
-        return new GetUserResponse("1","Successful Operation.",user);//User found and returned
+        try {
+            User user = userService.getUserById(id);
+            if (user == null)
+                return new GetUserResponse("-1", "Unable to find user.");//User not found, returning error
+            return new GetUserResponse("1", "Successful Operation.", user);//User found and returned
+        }
+        catch (Exception e){
+            return new GetUserResponse("-1", "Error: " + e);
+        }
     }
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)
@@ -40,11 +45,15 @@ public class UserController {
         */
         if (userCreateRequest == null || roles == null)
             return new UserCreateResponse("-1","Please check the structure of your request.");//one of the parameters missing
-
-        UserResponse user = userService.createUser(userCreateRequest,roles);//creating the user roles and saving in DB
-        if (user == null)
-            return new UserCreateResponse("-1","Could not create the user.");//an error occurred while creating the user
-        return new UserCreateResponse("1","User successfully created.",user);//user successfully created
+        try {
+            UserResponse user = userService.createUser(userCreateRequest, roles);//creating the user roles and saving in DB
+            if (user == null)
+                return new UserCreateResponse("-1", "Could not create the user.");//an error occurred while creating the user
+            return new UserCreateResponse("1", "User successfully created.", user);//user successfully created
+        }
+        catch (Exception e) {
+            return new UserCreateResponse ("-1", "Error: " + e);
+        }
     }
 
     @RequestMapping(value = "/user", method = RequestMethod.PUT)
@@ -52,19 +61,29 @@ public class UserController {
         //API for editing a specific user
         if (userEditRequest == null)
             return new UserEditResponse("-1","Please check the structure of your request.");//Missing payload
-        UserResponse user = userService.editUser(userEditRequest);//getting the user from DB and editing it
-        if (user == null)
-            return new UserEditResponse("-1","Could not edit user.");
-        return new UserEditResponse("1","User successfully edited.",user);
+        try {
+            UserResponse user = userService.editUser(userEditRequest);//getting the user from DB and editing it
+            if (user == null)
+                return new UserEditResponse("-1", "Could not edit user.");
+            return new UserEditResponse("1", "User successfully edited.", user);
+        }
+        catch (Exception e) {
+            return new UserEditResponse("-1", "Error: " + e);
+        }
     }
 
     @RequestMapping(value = "/user", method = RequestMethod.DELETE)
     public UserEditResponse deleteUser(@RequestParam int id) {
         //API for deleting users
-        String response = userService.deleteUser(id);//calling the delete method in the user service
-        if (response == null)
-            return new UserEditResponse("-1","Could not delete user.");
-        return new UserEditResponse("1","User successfully deleted.");
+        try {
+            String response = userService.deleteUser(id);//calling the delete method in the user service
+            if (response == null)
+                return new UserEditResponse("-1", "Could not delete user.");
+            return new UserEditResponse("1", "User successfully deleted.");
+        }
+        catch (Exception e) {
+            return new UserEditResponse("-1", "Error: " + e);
+        }
     }
 
     @RequestMapping(value = "/user/role", method = RequestMethod.PUT)
@@ -72,10 +91,15 @@ public class UserController {
         //adding new roles to the user
         if (id <= 0 || roleIds == null)
             return new UserEditResponse("-1","Please check the structure of your request.");
-        UserResponse user = userService.editUserRole(id, roleIds, "addRole");//editing user roles and adding new roles to the user
-        if (user == null)
-            return new UserEditResponse("-1","Could not add roles.");
-        return new UserEditResponse("1","Roles successfully added.",user);
+        try {
+            UserResponse user = userService.editUserRole(id, roleIds, "addRole");//editing user roles and adding new roles to the user
+            if (user == null)
+                return new UserEditResponse("-1", "Could not add roles.");
+            return new UserEditResponse("1", "Roles successfully added.", user);
+        }
+        catch (Exception e) {
+            return  new UserEditResponse("-1", "Error: " + e);
+        }
     }
 
     @RequestMapping(value = "/user/role", method = RequestMethod.DELETE)
@@ -83,9 +107,14 @@ public class UserController {
         //deleting existing roles from the user
         if (id <= 0 || roleIds == null)
             return new UserEditResponse("-1","Please check the structure of your request.");
-        UserResponse user = userService.editUserRole(id, roleIds, "deleteRole");//editing user roles and deleting mentioned roles from the user
-        if (user == null)
-            return new UserEditResponse("-1","Could not delete roles.");
-        return new UserEditResponse("1","Roles successfully deleted.",user);
+        try {
+            UserResponse user = userService.editUserRole(id, roleIds, "deleteRole");//editing user roles and deleting mentioned roles from the user
+            if (user == null)
+                return new UserEditResponse("-1", "Could not delete roles.");
+            return new UserEditResponse("1", "Roles successfully deleted.", user);
+        }
+        catch (Exception e) {
+            return new UserEditResponse("-1", "Error: " + e);
+        }
     }
 }

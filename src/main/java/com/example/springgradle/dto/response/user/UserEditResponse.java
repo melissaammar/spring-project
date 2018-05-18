@@ -10,6 +10,8 @@ public class UserEditResponse {
     private String message;
     private UserResponse user;
 
+    public UserEditResponse() { super(); }
+
     public UserEditResponse(String status, String message, UserResponse user) {
         this.status = status;
         this.message = message;

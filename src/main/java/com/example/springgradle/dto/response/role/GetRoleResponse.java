@@ -12,6 +12,8 @@ public class GetRoleResponse {
     private String message;
     private Role role;
 
+    public GetRoleResponse () { super(); }
+
     public GetRoleResponse(String status, String message, Role role) {
         this.status = status;
         this.message = message;

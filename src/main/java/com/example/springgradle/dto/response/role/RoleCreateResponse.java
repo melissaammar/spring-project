@@ -10,6 +10,8 @@ public class RoleCreateResponse {
     private String message;
     private RoleResponse role;
 
+    public RoleCreateResponse () { super(); }
+
     public RoleCreateResponse(String status, String message, RoleResponse role) {
         this.status = status;
         this.message = message;

@@ -12,6 +12,8 @@ public class GetUserResponse {
     private String message;
     private User user;
 
+    public GetUserResponse() { super(); }
+
     public GetUserResponse(String status, String message, User user) {
         this.status = status;
         this.message = message;
